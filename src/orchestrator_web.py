@@ -13,8 +13,7 @@ from dataclasses import dataclass, asdict
 from loguru import logger
 
 from src.transcriber import transcriber
-from src.clip_finder_v4 import clip_finder_v4, SimpleClip
-from src.youtube_monitor import VideoInfo
+from src.clip_finder_v5 import clip_finder_v5, ClipCandidate
 from src.llm import llm
 
 
@@ -35,6 +34,9 @@ class WebClip:
     speaker: Optional[str]
     youtube_url: str
     created_at: str
+    score: float = 0.0
+    thumbnail_url: Optional[str] = None
+    clip_url: Optional[str] = None  # For video clips when generated
 
     def to_dict(self) -> dict:
         return asdict(self)
@@ -92,7 +94,9 @@ class OrchestratorWeb:
                     why_good=clip.why_good,
                     speaker=clip.speaker,
                     youtube_url=youtube_url,
-                    created_at=datetime.utcnow().isoformat()
+                    created_at=datetime.utcnow().isoformat(),
+                    score=getattr(clip, 'score', 0.0),
+                    thumbnail_url=getattr(video, 'thumbnail_url', None)
                 ))
 
             # Cleanup
@@ -123,11 +127,11 @@ class OrchestratorWeb:
 
         return None
 
-    async def _find_clips_with_retry(self, transcript, video: VideoInfo) -> List[SimpleClip]:
-        """Find clips with retry logic."""
+    async def _find_clips_with_retry(self, transcript, video) -> List[ClipCandidate]:
+        """Find clips with retry logic using V5 multi-pass."""
         for attempt in range(self.max_retries + 1):
             try:
-                clips = await clip_finder_v4.find_clips(
+                clips = await clip_finder_v5.find_clips(
                     transcript=transcript,
                     video_title=video.title,
                     channel_name=video.channel_name,
@@ -142,7 +146,7 @@ class OrchestratorWeb:
 
         return []
 
-    async def _write_post(self, clip: SimpleClip, video: VideoInfo) -> Optional[str]:
+    async def _write_post(self, clip: ClipCandidate, video) -> Optional[str]:
         """Write a thoughtful post for a clip using LLM."""
         prompt = f"""Write a post about this podcast clip in a specific style.
 
@@ -190,7 +194,7 @@ Return ONLY the post text starting with the quote."""
             logger.warning(f"[Web] Post writing failed: {e}")
             return None
 
-    def _fallback_post(self, clip: SimpleClip, video: VideoInfo) -> str:
+    def _fallback_post(self, clip: ClipCandidate, video) -> str:
         """Fallback post if LLM fails."""
         return f'"{clip.quotable_line}"\n\nfrom {video.channel_name}'
 

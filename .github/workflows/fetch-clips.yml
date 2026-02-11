@@ -2,8 +2,8 @@ name: Fetch Podcast Clips
 
 on:
   schedule:
-    # Run every 6 hours
-    - cron: '0 */6 * * *'
+    # Run every 2 hours
+    - cron: '0 */2 * * *'
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
@@ -25,19 +25,18 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install groq youtube-transcript-api yt-dlp loguru aiofiles aiosqlite google-api-python-client
+          pip install groq aiohttp loguru yt-dlp pydantic
 
       - name: Fetch and process clips
         env:
-          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
           GROQ_API_KEY: ${{ secrets.GROQ_API_KEY }}
         run: |
           python scripts/fetch_clips.py
 
-      - name: Commit and push clips.json
+      - name: Commit and push updates
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add docs/clips.json
-          git diff --staged --quiet || git commit -m "Update clips.json [skip ci]"
+          git add docs/clips.json docs/posted.json data/
+          git diff --staged --quiet || git commit -m "Update clips [skip ci]"
           git push

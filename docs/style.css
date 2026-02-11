@@ -36,9 +36,10 @@ header h1 {
     max-width: 1200px;
     margin: 0 auto;
     flex-wrap: wrap;
+    align-items: center;
 }
 
-.controls input,
+.controls input[type="text"],
 .controls select {
     padding: 0.75rem 1rem;
     border: 1px solid #333;
@@ -48,19 +49,34 @@ header h1 {
     font-size: 0.95rem;
 }
 
-.controls input {
+.controls input[type="text"] {
     flex: 1;
     min-width: 200px;
 }
 
 .controls select {
-    min-width: 150px;
+    min-width: 140px;
 }
 
-.controls input:focus,
+.controls input[type="text"]:focus,
 .controls select:focus {
     outline: none;
     border-color: #4a9eff;
+}
+
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #888;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+.checkbox-label input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
 }
 
 .stats {
@@ -96,6 +112,11 @@ main {
     border-color: #333;
 }
 
+.clip-card.posted {
+    opacity: 0.6;
+    border-color: #1a3a1a;
+}
+
 .clip-header {
     display: flex;
     justify-content: space-between;
@@ -120,16 +141,44 @@ main {
     text-align: right;
     font-size: 0.8rem;
     color: #666;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    align-items: flex-end;
 }
 
 .pattern-tag {
     display: inline-block;
     background: #2a2a2a;
-    padding: 0.25rem 0.5rem;
+    padding: 0.2rem 0.5rem;
     border-radius: 4px;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #aaa;
-    margin-top: 0.25rem;
+}
+
+.score-tag {
+    display: inline-block;
+    background: #1a3a1a;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: #4ade80;
+}
+
+.posted-tag {
+    display: inline-block;
+    background: #22c55e;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    color: #000;
+}
+
+.clip-thumbnail {
+    width: 100%;
+    max-width: 320px;
+    border-radius: 8px;
+    margin-bottom: 1rem;
 }
 
 .quotable-line {
@@ -153,15 +202,15 @@ main {
 
 .clip-actions {
     display: flex;
-    gap: 0.75rem;
+    gap: 0.5rem;
     flex-wrap: wrap;
 }
 
 .btn {
-    padding: 0.6rem 1.2rem;
+    padding: 0.5rem 1rem;
     border: none;
     border-radius: 6px;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     cursor: pointer;
     transition: all 0.2s;
     text-decoration: none;
@@ -186,6 +235,15 @@ main {
 
 .btn-secondary:hover {
     background: #333;
+}
+
+.btn-posted {
+    background: #22c55e;
+    color: #000;
+}
+
+.btn-posted:hover {
+    background: #4ade80;
 }
 
 .btn.copied {
@@ -239,7 +297,7 @@ footer {
         flex-direction: column;
     }
 
-    .controls input,
+    .controls input[type="text"],
     .controls select {
         width: 100%;
     }
@@ -250,6 +308,10 @@ footer {
 
     .clip-meta {
         text-align: left;
+        align-items: flex-start;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.5rem;
     }
 
     .clip-actions {

@@ -19,8 +19,13 @@
         </select>
         <select id="sort">
             <option value="newest">Newest First</option>
+            <option value="score">Best Score</option>
             <option value="oldest">Oldest First</option>
         </select>
+        <label class="checkbox-label">
+            <input type="checkbox" id="hide-posted">
+            Hide posted
+        </label>
     </div>
 
     <div class="stats" id="stats"></div>
@@ -30,7 +35,7 @@
     </main>
 
     <footer>
-        <p>Auto-updated every 6 hours via GitHub Actions</p>
+        <p>Auto-updated every 2 hours via GitHub Actions</p>
     </footer>
 
     <script src="app.js"></script>

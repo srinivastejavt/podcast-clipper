@@ -2,16 +2,22 @@
 
 let allClips = [];
 let filteredClips = [];
+let postedIds = new Set();
 
-// Load clips from JSON
+// Load clips and posted state
 async function loadClips() {
     try {
-        const response = await fetch('clips.json');
-        if (!response.ok) {
-            throw new Error('Failed to load clips');
-        }
-        const data = await response.json();
+        // Load clips
+        const clipsRes = await fetch('clips.json');
+        if (!clipsRes.ok) throw new Error('Failed to load clips');
+        const data = await clipsRes.json();
         allClips = data.clips || [];
+
+        // Load posted state from localStorage
+        const saved = localStorage.getItem('postedClips');
+        if (saved) {
+            postedIds = new Set(JSON.parse(saved));
+        }
 
         // Populate channel filter
         populateChannelFilter(data.metadata?.channels || []);
@@ -26,10 +32,15 @@ async function loadClips() {
         document.getElementById('clips-container').innerHTML = `
             <div class="empty-state">
                 <h2>No clips yet</h2>
-                <p>Clips will appear here after the first GitHub Actions run.</p>
+                <p>Clips will appear here after the first run.</p>
             </div>
         `;
     }
+}
+
+// Get clip ID
+function getClipId(clip) {
+    return `${clip.video_id}_${clip.start_time}`;
 }
 
 // Populate channel dropdown
@@ -48,7 +59,8 @@ function updateStats(metadata) {
     if (!metadata) return;
     const stats = document.getElementById('stats');
     const date = new Date(metadata.generated_at);
-    stats.textContent = `${metadata.total_clips} clips from ${metadata.channels?.length || 0} channels • Updated ${formatRelativeTime(date)}`;
+    const unposted = allClips.filter(c => !postedIds.has(getClipId(c))).length;
+    stats.textContent = `${metadata.total_clips} clips (${unposted} unposted) • Updated ${formatRelativeTime(date)}`;
 }
 
 // Format relative time
@@ -74,9 +86,15 @@ function filterAndDisplay() {
     const searchTerm = document.getElementById('search').value.toLowerCase();
     const channelFilter = document.getElementById('channel-filter').value;
     const sortOrder = document.getElementById('sort').value;
+    const hidePosted = document.getElementById('hide-posted')?.checked || false;
 
     // Filter
     filteredClips = allClips.filter(clip => {
+        const clipId = getClipId(clip);
+        const isPosted = postedIds.has(clipId);
+
+        if (hidePosted && isPosted) return false;
+
         const matchesSearch = !searchTerm ||
             clip.quotable_line?.toLowerCase().includes(searchTerm) ||
             clip.transcript_text?.toLowerCase().includes(searchTerm) ||
@@ -89,11 +107,15 @@ function filterAndDisplay() {
     });
 
     // Sort
-    filteredClips.sort((a, b) => {
-        const dateA = new Date(a.published_at || a.created_at);
-        const dateB = new Date(b.published_at || b.created_at);
-        return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
-    });
+    if (sortOrder === 'score') {
+        filteredClips.sort((a, b) => (b.score || 0) - (a.score || 0));
+    } else {
+        filteredClips.sort((a, b) => {
+            const dateA = new Date(a.published_at || a.created_at);
+            const dateB = new Date(b.published_at || b.created_at);
+            return sortOrder === 'newest' ? dateB - dateA : dateA - dateB;
+        });
+    }
 
     // Display
     displayClips(filteredClips);
@@ -125,9 +147,12 @@ function createClipCard(clip, index) {
     });
 
     const duration = Math.round(clip.end_time - clip.start_time);
+    const clipId = getClipId(clip);
+    const isPosted = postedIds.has(clipId);
+    const score = clip.score ? `${clip.score.toFixed(1)}/10` : '';
 
     return `
-        <article class="clip-card" data-index="${index}">
+        <article class="clip-card ${isPosted ? 'posted' : ''}" data-index="${index}" data-clip-id="${clipId}">
             <div class="clip-header">
                 <div>
                     <div class="channel-name">${escapeHtml(clip.channel_name)}</div>
@@ -135,10 +160,14 @@ function createClipCard(clip, index) {
                 </div>
                 <div class="clip-meta">
                     <div>${formattedDate}</div>
-                    <div>${duration}s clip</div>
+                    <div>${duration}s</div>
+                    ${score ? `<span class="score-tag">${score}</span>` : ''}
                     ${clip.pattern ? `<span class="pattern-tag">${escapeHtml(clip.pattern)}</span>` : ''}
+                    ${isPosted ? '<span class="posted-tag">Posted</span>' : ''}
                 </div>
             </div>
+
+            ${clip.thumbnail_url ? `<img src="${clip.thumbnail_url}" class="clip-thumbnail" alt="thumbnail">` : ''}
 
             <div class="quotable-line">"${escapeHtml(clip.quotable_line)}"</div>
 
@@ -148,11 +177,14 @@ function createClipCard(clip, index) {
                 <button class="btn btn-primary" onclick="copyPost(${index})">
                     Copy Post
                 </button>
+                <button class="btn ${isPosted ? 'btn-posted' : 'btn-secondary'}" onclick="togglePosted('${clipId}')">
+                    ${isPosted ? 'Unmark Posted' : 'Mark Posted'}
+                </button>
                 <a href="${clip.youtube_url}" target="_blank" class="btn btn-secondary">
-                    Watch Clip
+                    Watch
                 </a>
                 <button class="btn btn-secondary" onclick="toggleTranscript(${index})">
-                    Show Transcript
+                    Transcript
                 </button>
             </div>
 
@@ -186,13 +218,26 @@ async function copyPost(index) {
     }
 }
 
+// Toggle posted state
+function togglePosted(clipId) {
+    if (postedIds.has(clipId)) {
+        postedIds.delete(clipId);
+    } else {
+        postedIds.add(clipId);
+    }
+
+    // Save to localStorage
+    localStorage.setItem('postedClips', JSON.stringify([...postedIds]));
+
+    // Refresh display
+    filterAndDisplay();
+    updateStats({ total_clips: allClips.length, generated_at: new Date().toISOString() });
+}
+
 // Toggle transcript visibility
 function toggleTranscript(index) {
     const el = document.getElementById(`transcript-${index}`);
     el.classList.toggle('show');
-
-    const btn = document.querySelector(`[data-index="${index}"] .transcript-toggle`).previousElementSibling.lastElementChild;
-    btn.textContent = el.classList.contains('show') ? 'Hide Transcript' : 'Show Transcript';
 }
 
 // Escape HTML
@@ -207,6 +252,12 @@ function escapeHtml(text) {
 document.getElementById('search').addEventListener('input', filterAndDisplay);
 document.getElementById('channel-filter').addEventListener('change', filterAndDisplay);
 document.getElementById('sort').addEventListener('change', filterAndDisplay);
+
+// Hide posted checkbox
+const hidePostedCheckbox = document.getElementById('hide-posted');
+if (hidePostedCheckbox) {
+    hidePostedCheckbox.addEventListener('change', filterAndDisplay);
+}
 
 // Load on page load
 loadClips();

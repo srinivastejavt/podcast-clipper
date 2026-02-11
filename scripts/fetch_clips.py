@@ -2,7 +2,7 @@
 """
 Fetch Clips - Entry point for GitHub Actions
 
-Fetches new videos from configured channels, finds clips, and exports to JSON.
+Uses RSS feeds (no quota limits!) to fetch videos, then processes for clips.
 """
 
 import asyncio
@@ -16,15 +16,14 @@ from loguru import logger
 # Add parent dir to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from src.youtube_monitor import YouTubeMonitor
-from src.orchestrator_web import orchestrator_web, WebClip
-from src.config import config
-
+from src.rss_monitor import rss_monitor
+from src.orchestrator_web import orchestrator_web
 
 # Output paths
-WEB_DIR = Path(__file__).parent.parent / "docs"
-CLIPS_FILE = WEB_DIR / "clips.json"
+DOCS_DIR = Path(__file__).parent.parent / "docs"
+CLIPS_FILE = DOCS_DIR / "clips.json"
 STATE_FILE = Path(__file__).parent.parent / "data" / "processed_videos.json"
+POSTED_FILE = DOCS_DIR / "posted.json"
 
 
 def load_processed_videos() -> set:
@@ -52,21 +51,36 @@ def load_existing_clips() -> list:
     return []
 
 
-def save_clips(clips: list):
-    """Save clips to JSON."""
-    WEB_DIR.mkdir(parents=True, exist_ok=True)
+def load_posted_clips() -> set:
+    """Load set of posted clip IDs."""
+    if POSTED_FILE.exists():
+        with open(POSTED_FILE) as f:
+            data = json.load(f)
+            return set(data.get("posted_ids", []))
+    return set()
+
+
+def save_clips(clips: list, posted_ids: set):
+    """Save clips to JSON with posted status."""
+    DOCS_DIR.mkdir(parents=True, exist_ok=True)
+
+    # Mark clips as posted
+    for clip in clips:
+        clip_id = f"{clip.get('video_id')}_{clip.get('start_time')}"
+        clip['posted'] = clip_id in posted_ids
 
     # Sort by published date (newest first)
     clips.sort(key=lambda c: c.get("published_at", ""), reverse=True)
 
-    # Keep only last 7 days of clips (prevent file from growing forever)
-    cutoff = (datetime.utcnow() - timedelta(days=7)).isoformat()
+    # Keep only last 14 days of clips
+    cutoff = (datetime.utcnow() - timedelta(days=14)).isoformat()
     clips = [c for c in clips if c.get("published_at", "") > cutoff or c.get("created_at", "") > cutoff]
 
     data = {
         "clips": clips,
         "metadata": {
             "total_clips": len(clips),
+            "unposted_clips": len([c for c in clips if not c.get('posted')]),
             "generated_at": datetime.utcnow().isoformat(),
             "channels": list(set(c.get("channel_name", "") for c in clips))
         }
@@ -75,17 +89,12 @@ def save_clips(clips: list):
     with open(CLIPS_FILE, "w") as f:
         json.dump(data, f, indent=2)
 
-    logger.info(f"Saved {len(clips)} clips to {CLIPS_FILE}")
+    logger.info(f"Saved {len(clips)} clips ({data['metadata']['unposted_clips']} unposted)")
 
 
 async def main():
     """Main entry point."""
-    logger.info("=== Podcast Clip Fetcher ===")
-
-    # Check required env vars
-    if not os.getenv("YOUTUBE_API_KEY"):
-        logger.error("YOUTUBE_API_KEY not set!")
-        sys.exit(1)
+    logger.info("=== Podcast Clip Fetcher (RSS - No Quota!) ===")
 
     # Groq is optional - will fall back to Ollama if not set
     if not os.getenv("GROQ_API_KEY"):
@@ -94,18 +103,16 @@ async def main():
     # Load state
     processed_ids = load_processed_videos()
     existing_clips = load_existing_clips()
-    logger.info(f"Already processed: {len(processed_ids)} videos, {len(existing_clips)} clips")
+    posted_ids = load_posted_clips()
+    logger.info(f"State: {len(processed_ids)} processed, {len(existing_clips)} clips, {len(posted_ids)} posted")
 
-    # Initialize YouTube monitor
-    monitor = YouTubeMonitor()
-
-    # Fetch recent videos (last 24 hours to avoid duplicates)
-    logger.info("Fetching recent videos...")
-    videos = await monitor.check_all_channels(since_hours=24)
+    # Fetch recent videos via RSS (no quota limits!)
+    logger.info("Fetching via RSS feeds...")
+    videos = await rss_monitor.check_all_channels(since_hours=48)
 
     # Filter to podcasts only
-    podcasts = [v for v in videos if monitor.is_likely_podcast(v)]
-    logger.info(f"Found {len(podcasts)} new podcasts")
+    podcasts = [v for v in videos if rss_monitor.is_likely_podcast(v)]
+    logger.info(f"Found {len(podcasts)} podcasts")
 
     # Filter out already processed
     new_podcasts = [v for v in podcasts if v.video_id not in processed_ids]
@@ -113,6 +120,8 @@ async def main():
 
     if not new_podcasts:
         logger.info("No new podcasts to process")
+        # Still save to update posted status
+        save_clips(existing_clips, posted_ids)
         return
 
     # Process each video
@@ -121,10 +130,14 @@ async def main():
         try:
             clips = await orchestrator_web.process_video(video)
             for clip in clips:
-                new_clips.append(clip.to_dict())
+                clip_dict = clip.to_dict()
+                clip_dict['thumbnail_url'] = video.thumbnail_url
+                new_clips.append(clip_dict)
             processed_ids.add(video.video_id)
         except Exception as e:
             logger.error(f"Failed to process {video.video_id}: {e}")
+            # Still mark as processed to avoid retrying broken videos
+            processed_ids.add(video.video_id)
 
     logger.info(f"Found {len(new_clips)} new clips")
 
@@ -141,7 +154,7 @@ async def main():
             unique_clips.append(clip)
 
     # Save results
-    save_clips(unique_clips)
+    save_clips(unique_clips, posted_ids)
     save_processed_videos(processed_ids)
 
     logger.info(f"Done! Total clips: {len(unique_clips)}")
