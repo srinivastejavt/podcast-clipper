@@ -38,6 +38,6 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add web/clips.json
+          git add docs/clips.json
           git diff --staged --quiet || git commit -m "Update clips.json [skip ci]"
           git push

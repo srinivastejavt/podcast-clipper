@@ -46,7 +46,8 @@
       "Bash(gh auth:*)",
       "Bash(gh repo create:*)",
       "Bash(gh secret set:*)",
-      "Bash(gh api:*)"
+      "Bash(gh api:*)",
+      "Bash(git push:*)"
     ]
   }
 }

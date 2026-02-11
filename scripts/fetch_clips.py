@@ -22,7 +22,7 @@ from src.config import config
 
 
 # Output paths
-WEB_DIR = Path(__file__).parent.parent / "web"
+WEB_DIR = Path(__file__).parent.parent / "docs"
 CLIPS_FILE = WEB_DIR / "clips.json"
 STATE_FILE = Path(__file__).parent.parent / "data" / "processed_videos.json"
 
