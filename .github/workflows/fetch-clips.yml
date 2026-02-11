@@ -33,10 +33,14 @@ jobs:
         run: |
           python scripts/fetch_clips.py
 
+      - name: Cleanup old MP4s (>48 hours)
+        run: |
+          python scripts/generate_mp4s.py --cleanup-only
+
       - name: Commit and push updates
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add docs/clips.json docs/posted.json data/
+          git add docs/clips.json docs/posted.json docs/clips/ data/
           git diff --staged --quiet || git commit -m "Update clips [skip ci]"
           git push

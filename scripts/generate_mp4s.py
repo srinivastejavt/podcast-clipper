@@ -4,11 +4,14 @@ Generate MP4 clips for all clips in clips.json.
 
 This ensures download links work by creating MP4s with matching filenames.
 Run locally (not in GitHub Actions) since it requires video downloads.
+
+Also handles cleanup of old MP4s (>48 hours) to manage storage.
 """
 
 import asyncio
 import json
 import sys
+import time
 from pathlib import Path
 from loguru import logger
 
@@ -19,6 +22,9 @@ from src.clip_generator import clip_generator
 DOCS_DIR = Path(__file__).parent.parent / "docs"
 CLIPS_JSON = DOCS_DIR / "clips.json"
 CLIPS_OUTPUT_DIR = DOCS_DIR / "clips"
+
+# Auto-delete MP4s older than this (in hours)
+MAX_AGE_HOURS = 48
 
 
 async def generate_clip_for_entry(clip: dict) -> bool:
@@ -126,5 +132,35 @@ async def main():
     logger.info(f"Total MP4s in docs/clips: {len(list(CLIPS_OUTPUT_DIR.glob('*.mp4')))}")
 
 
+def cleanup_old_clips():
+    """Delete MP4s older than MAX_AGE_HOURS to manage storage."""
+    logger.info(f"\n=== Cleaning up clips older than {MAX_AGE_HOURS} hours ===")
+
+    if not CLIPS_OUTPUT_DIR.exists():
+        return 0
+
+    cutoff = time.time() - (MAX_AGE_HOURS * 60 * 60)
+    deleted = 0
+
+    for clip_file in CLIPS_OUTPUT_DIR.glob("*.mp4"):
+        if clip_file.stat().st_mtime < cutoff:
+            size_mb = clip_file.stat().st_size / (1024 * 1024)
+            clip_file.unlink()
+            logger.info(f"Deleted old clip: {clip_file.name} ({size_mb:.1f} MB)")
+            deleted += 1
+
+    logger.info(f"Deleted {deleted} old clips")
+    return deleted
+
+
 if __name__ == "__main__":
-    asyncio.run(main())
+    import argparse
+    parser = argparse.ArgumentParser(description="Generate or cleanup MP4 clips")
+    parser.add_argument("--cleanup-only", action="store_true", help="Only cleanup old clips, don't generate new ones")
+    args = parser.parse_args()
+
+    if args.cleanup_only:
+        cleanup_old_clips()
+    else:
+        asyncio.run(main())
+        cleanup_old_clips()
