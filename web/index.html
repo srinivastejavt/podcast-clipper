@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Podcast Clips</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <header>
+        <h1>Podcast Clips</h1>
+        <p class="subtitle">Fresh clips from crypto podcasts, ready to post</p>
+    </header>
+
+    <div class="controls">
+        <input type="text" id="search" placeholder="Search clips...">
+        <select id="channel-filter">
+            <option value="">All Channels</option>
+        </select>
+        <select id="sort">
+            <option value="newest">Newest First</option>
+            <option value="oldest">Oldest First</option>
+        </select>
+    </div>
+
+    <div class="stats" id="stats"></div>
+
+    <main id="clips-container">
+        <p class="loading">Loading clips...</p>
+    </main>
+
+    <footer>
+        <p>Auto-updated every 6 hours via GitHub Actions</p>
+    </footer>
+
+    <script src="app.js"></script>
+</body>
+</html>

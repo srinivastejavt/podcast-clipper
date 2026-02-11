@@ -1,0 +1,242 @@
+{
+  "channels": [
+    {
+      "name": "Bankless",
+      "youtube_handle": "@Bankless",
+      "x_handle": "@BanklessHQ",
+      "tier": "A",
+      "notes": "Hot takes, bold predictions, meme-worthy moments"
+    },
+    {
+      "name": "The Pomp Podcast",
+      "youtube_handle": "@AnthonyPompliano",
+      "x_handle": "@APompliano",
+      "tier": "A",
+      "notes": "Founder stories, contrarian takes, strong opinions"
+    },
+    {
+      "name": "Empire",
+      "youtube_handle": "@EmpirePodcast",
+      "x_handle": "@theblockworksne",
+      "tier": "A",
+      "notes": "High-signal guests, market insights"
+    },
+    {
+      "name": "Lightspeed Podcast",
+      "youtube_handle": "@LightspeedPod",
+      "x_handle": "@LightspeedPod",
+      "tier": "A",
+      "notes": "Solana ecosystem, builder insights, strong opinions"
+    },
+    {
+      "name": "Bell Curve",
+      "youtube_handle": "@BellCurvePodcast",
+      "x_handle": "@BellCurvePod",
+      "tier": "A",
+      "notes": "DeFi deep dives, opinionated hosts"
+    },
+    {
+      "name": "What Bitcoin Did",
+      "youtube_handle": "@WhatBitcoinDid",
+      "x_handle": "@WhatBitcoinDid",
+      "tier": "A",
+      "notes": "Debates, confrontational content, Bitcoin maxi hot takes"
+    },
+    {
+      "name": "The Breakdown",
+      "youtube_handle": "@TheBreakdownNLW",
+      "x_handle": "@nlw",
+      "tier": "A",
+      "notes": "Punchy daily macro takes, very quotable"
+    },
+    {
+      "name": "Up Only",
+      "youtube_handle": "@UpOnlyTV",
+      "x_handle": "@UpOnlyTV",
+      "tier": "A",
+      "notes": "Cobie & Ledger, legendary chemistry, meme-worthy"
+    },
+    {
+      "name": "The Chopping Block",
+      "youtube_handle": "@TheChoppingBlock",
+      "x_handle": "@ChoppingBlock",
+      "tier": "A",
+      "notes": "Haseeb, Tom, debates, insider VC takes"
+    },
+    {
+      "name": "Real Vision Crypto",
+      "youtube_handle": "@RealVisionCrypto",
+      "x_handle": "@RealVision",
+      "tier": "A",
+      "notes": "Raoul Pal bold macro predictions"
+    },
+    {
+      "name": "Unchained",
+      "youtube_handle": "@UnchainedCrypto",
+      "x_handle": "@Unchained_pod",
+      "tier": "B",
+      "notes": "Laura Shin, journalistic style, top guests but less provocative"
+    },
+    {
+      "name": "The Rollup",
+      "youtube_handle": "@therollupco",
+      "x_handle": "@therollup",
+      "tier": "B",
+      "notes": "Good content but more educational"
+    },
+    {
+      "name": "The Defiant Podcast",
+      "youtube_handle": "@TheDefiant",
+      "x_handle": "@DefiantNews",
+      "tier": "B",
+      "notes": "News-focused, occasional strong takes"
+    },
+    {
+      "name": "When Shift Happens",
+      "youtube_handle": "@WhenShiftHappens",
+      "x_handle": "@WhenShiftHappens",
+      "tier": "B",
+      "notes": "Long-form founder stories"
+    },
+    {
+      "name": "On The Brink with Castle Island",
+      "youtube_handle": "@CastleIslandVC",
+      "x_handle": "@CastleIslandVC",
+      "tier": "B",
+      "notes": "VC perspective, institutional insights"
+    },
+    {
+      "name": "Rug Radio",
+      "youtube_handle": "@RugRadio",
+      "x_handle": "@RugRadio",
+      "tier": "B",
+      "notes": "NFT/culture focused, community vibes"
+    },
+    {
+      "name": "Blocmates",
+      "youtube_handle": "@Blocmates",
+      "x_handle": "@blocmates_",
+      "tier": "B",
+      "notes": "DeFi tutorials and alpha"
+    },
+    {
+      "name": "The Gwart Show",
+      "youtube_handle": "@TheGwartShow",
+      "x_handle": "@TheGwartShow",
+      "tier": "B",
+      "notes": "Solana ecosystem discussions"
+    },
+    {
+      "name": "TFTC: A Bitcoin Podcast",
+      "youtube_handle": "@TFTC21",
+      "x_handle": "@TFTC21",
+      "tier": "B",
+      "notes": "Marty Bent opinionated, not purely technical"
+    },
+    {
+      "name": "Coin Bureau Podcast",
+      "youtube_handle": "@CoinBureau",
+      "x_handle": "@coinbureau",
+      "tier": "B",
+      "notes": "Large audience, personality-driven educational"
+    },
+    {
+      "name": "Into the Ether",
+      "youtube_handle": "@IntoTheEther",
+      "x_handle": "@into_the_ether",
+      "tier": "B",
+      "notes": "Ethereum ecosystem focus"
+    },
+    {
+      "name": "Solana Podcast",
+      "youtube_handle": "@SolanaPodcast",
+      "x_handle": "@SolanaPodcast",
+      "tier": "B",
+      "notes": "Builder stories from Solana ecosystem"
+    },
+    {
+      "name": "Overpriced JPEGs",
+      "youtube_handle": "@OverpricedJPEGs",
+      "x_handle": "@Carly_Reilly",
+      "tier": "B",
+      "notes": "NFT culture, strong opinions"
+    },
+    {
+      "name": "0xResearch",
+      "youtube_handle": "@0xResearch",
+      "x_handle": "@0xResearch",
+      "tier": "C",
+      "notes": "Technical deep-dives, academic style - rarely produces viral clips"
+    },
+    {
+      "name": "Token Terminal",
+      "youtube_handle": "@TokenTerminal",
+      "x_handle": "@tokenterminal",
+      "tier": "C",
+      "notes": "Data-focused, technical analysis"
+    },
+    {
+      "name": "Epicenter",
+      "youtube_handle": "@EpicenterTV",
+      "x_handle": "@epicenterpod",
+      "tier": "C",
+      "notes": "Very technical, long-form interviews"
+    },
+    {
+      "name": "TBPN Podcast",
+      "youtube_handle": "@TBPNpodcast",
+      "x_handle": "@TBPNpodcast",
+      "tier": "C",
+      "notes": "Technical blockchain content"
+    },
+    {
+      "name": "The Scoop",
+      "youtube_handle": "@TheBlock__",
+      "x_handle": "@TheBlock__",
+      "tier": "C",
+      "notes": "News-focused, institutional coverage"
+    },
+    {
+      "name": "The Crypto Beat",
+      "youtube_handle": "@TheCryptoBeat",
+      "x_handle": "@TheCryptoBeat",
+      "tier": "C",
+      "notes": "General crypto news"
+    },
+    {
+      "name": "The Edge Podcast",
+      "youtube_handle": "@TheEdgePodcast",
+      "x_handle": "@TheEdgePodcast",
+      "tier": "C",
+      "notes": "Technical trading content"
+    },
+    {
+      "name": "Stephan Livera Podcast",
+      "youtube_handle": "@StephanLivera",
+      "x_handle": "@stephanlivera",
+      "tier": "C",
+      "notes": "Technical Bitcoin content"
+    }
+  ],
+  "tier_config": {
+    "A": {
+      "description": "Clip goldmines - prioritize these",
+      "priority_weight": 1.5,
+      "min_clips_per_video": 0,
+      "max_clips_per_video": 3
+    },
+    "B": {
+      "description": "Good content, occasional gems",
+      "priority_weight": 1.0,
+      "min_clips_per_video": 0,
+      "max_clips_per_video": 2
+    },
+    "C": {
+      "description": "Technical/educational - skip unless exceptional",
+      "priority_weight": 0.5,
+      "min_clips_per_video": 0,
+      "max_clips_per_video": 1,
+      "min_score_threshold": 2.0
+    }
+  }
+}
