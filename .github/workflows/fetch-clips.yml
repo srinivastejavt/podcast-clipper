@@ -25,7 +25,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install groq aiohttp loguru yt-dlp pydantic
+          pip install groq aiohttp loguru pytubefix python-dotenv pydantic
 
       - name: Fetch and process clips
         env:

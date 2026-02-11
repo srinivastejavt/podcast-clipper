@@ -181,6 +181,82 @@ main {
     margin-bottom: 1rem;
 }
 
+/* Video Player */
+.video-container {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    margin-bottom: 1rem;
+    border-radius: 8px;
+    overflow: hidden;
+    background: #000;
+}
+
+.video-container iframe,
+.video-container video {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    border: none;
+    display: block;
+}
+
+.video-container video {
+    background: #000;
+}
+
+.video-toggle {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.video-toggle button {
+    padding: 0.3rem 0.6rem;
+    font-size: 0.75rem;
+    border: 1px solid #333;
+    background: #1a1a1a;
+    color: #888;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.video-toggle button.active {
+    background: #4a9eff;
+    color: #000;
+    border-color: #4a9eff;
+}
+
+.video-placeholder {
+    width: 100%;
+    max-width: 560px;
+    aspect-ratio: 16 / 9;
+    background: #1a1a1a;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #666;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    transition: background 0.2s;
+}
+
+.video-placeholder:hover {
+    background: #222;
+}
+
+.video-actions {
+    margin-bottom: 1rem;
+}
+
+.download-btn {
+    font-size: 0.8rem;
+}
+
+.video-container video {
+    cursor: pointer;
+}
+
 .quotable-line {
     font-size: 1.1rem;
     font-weight: 500;
@@ -277,6 +353,73 @@ footer {
     font-size: 0.85rem;
     border-top: 1px solid #222;
     margin-top: 2rem;
+}
+
+/* Quick stats bar */
+.quick-stats {
+    display: flex;
+    gap: 1.5rem;
+    justify-content: center;
+    padding: 0.75rem;
+    background: #111;
+    border-bottom: 1px solid #222;
+    font-size: 0.85rem;
+}
+
+.stat-item {
+    color: #666;
+}
+
+.stat-item strong {
+    color: #4a9eff;
+}
+
+/* Keyboard shortcuts hint */
+.keyboard-hint {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background: #1a1a1a;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    font-size: 0.75rem;
+    color: #666;
+    z-index: 100;
+}
+
+.keyboard-hint kbd {
+    background: #333;
+    padding: 0.15rem 0.4rem;
+    border-radius: 3px;
+    color: #aaa;
+    margin-right: 0.25rem;
+}
+
+/* Active clip highlight */
+.clip-card.active {
+    border-color: #4a9eff;
+    box-shadow: 0 0 0 1px #4a9eff;
+}
+
+/* Copy feedback toast */
+.toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #22c55e;
+    color: #000;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 500;
+    opacity: 0;
+    transition: opacity 0.3s;
+    z-index: 200;
+}
+
+.toast.show {
+    opacity: 1;
 }
 
 /* Empty state */

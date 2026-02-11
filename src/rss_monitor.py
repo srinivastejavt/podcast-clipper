@@ -1,26 +1,22 @@
 """
-RSS Monitor - No API quota limits!
+YouTube Channel Monitor - Uses yt-dlp for scraping (no API quota!)
 
-YouTube channels have RSS feeds at:
-https://www.youtube.com/feeds/videos.xml?channel_id=CHANNEL_ID
-
-Free, unlimited, no API key needed.
+Since YouTube disabled RSS feeds, we use yt-dlp to scrape channel pages.
+This is free and has no quota limits.
 """
 
 import asyncio
-import aiohttp
-import xml.etree.ElementTree as ET
+import sys
+import json
 from datetime import datetime, timedelta
 from typing import List, Optional
 from dataclasses import dataclass
 from loguru import logger
 
-from src.config import config
-
 
 @dataclass
 class VideoInfo:
-    """Video metadata from RSS."""
+    """Video metadata."""
     video_id: str
     title: str
     channel_name: str
@@ -33,149 +29,157 @@ class VideoInfo:
 
 
 class RSSMonitor:
-    """Monitor YouTube channels via RSS feeds - no quota limits!"""
+    """Monitor YouTube channels using yt-dlp (no quota limits!)"""
 
-    # Channel IDs (we need these, not handles)
-    # Format: channel_name -> (channel_id, x_handle)
+    # Channel handles and X handles
+    # Format: channel_name -> (youtube_handle, x_handle)
     CHANNEL_IDS = {
-        "Bankless": ("UCAl9Ld79qaZxp9JzEOwd3aA", "@BanklessHQ"),
-        "The Pomp Podcast": ("UCevXpeL8cNyAnww-NqJ4m2w", "@APompliano"),
-        "Empire": ("UCL0J4MLEdLP0-UyLu0hCktg", "@theblockworksne"),
-        "Bell Curve": ("UCNGk0aCr4xr8_qIlluOSA_w", "@BellCurvePod"),
-        "What Bitcoin Did": ("UCE-V0b0VdL8WpMQhw2wf_Bw", "@WhatBitcoinDid"),
-        "Up Only": ("UC1B03sc6xMvOblOBbBxoKzg", "@UpOnlyTV"),
-        "The Chopping Block": ("UCL-0J3xHN8uZinKNr9ynElQ", "@ChoppingBlock"),
-        "Real Vision Crypto": ("UC-pV5WshKug_JzV9tCIk7Rg", "@RealVision"),
-        "Unchained": ("UCWiiMnsnw5Isc2PP1to9nNw", "@Unchained_pod"),
-        "The Rollup": ("UC8Hh8kQ5X3gkxMxKu1g7_Bg", "@therollup"),
-        "The Defiant Podcast": ("UChb3rwdvsKZLp_p8P9OKa6Q", "@DefiantNews"),
-        "Solana Podcast": ("UCjsgQKPpR7ubPQhPqjf8kyA", "@SolanaPodcast"),
-        "Coin Bureau Podcast": ("UCqK_GSMbpiV8spgD3ZGloSw", "@coinbureau"),
-        "TFTC": ("UCtdbWsnfA08KhSUO4amVLaQ", "@TFTC21"),
-        "Stephan Livera": ("UCDqPIrJSzHyyJpmH6wnxVxA", "@stephanlivera"),
+        "Bankless": ("@Bankless", "@BanklessHQ"),
+        "The Pomp Podcast": ("@AnthonyPompliano", "@APompliano"),
+        "Empire": ("@Blockworks", "@theblockworksne"),
+        "Bell Curve": ("@BellCurvePodcast", "@BellCurvePod"),
+        "What Bitcoin Did": ("@WhatBitcoinDid", "@WhatBitcoinDid"),
+        "Up Only": ("@UpOnly", "@UpOnlyTV"),
+        "The Chopping Block": ("@ChoppingBlockPod", "@ChoppingBlock"),
+        "Real Vision": ("@RealVisionFinance", "@RealVision"),
+        "Unchained": ("@unchaborada", "@Unchained_pod"),
+        "The Rollup": ("@therollupco", "@therollup"),
+        "Coin Bureau": ("@CoinBureau", "@coinbureau"),
     }
 
     def __init__(self):
-        self.rss_base = "https://www.youtube.com/feeds/videos.xml?channel_id="
+        pass
 
     async def get_channel_videos(
         self,
         channel_name: str,
-        channel_id: str,
+        youtube_handle: str,
         x_handle: str = "",
         since_hours: int = 48
     ) -> List[VideoInfo]:
-        """Fetch recent videos from a channel's RSS feed."""
-        url = f"{self.rss_base}{channel_id}"
+        """Fetch recent videos from a channel using yt-dlp."""
         cutoff = datetime.utcnow() - timedelta(hours=since_hours)
 
         try:
-            async with aiohttp.ClientSession() as session:
-                async with session.get(url, timeout=30) as response:
-                    if response.status != 200:
-                        logger.warning(f"RSS fetch failed for {channel_name}: {response.status}")
-                        return []
+            # Use yt-dlp to get channel videos (limited to recent)
+            channel_url = f"https://www.youtube.com/{youtube_handle}/videos"
 
-                    xml_content = await response.text()
+            cmd = [
+                sys.executable, "-m", "yt_dlp",
+                "--flat-playlist",
+                "--playlist-end", "10",  # Only last 10 videos
+                "-J",  # JSON output
+                channel_url
+            ]
 
-            # Parse XML
-            root = ET.fromstring(xml_content)
-            ns = {
-                'atom': 'http://www.w3.org/2005/Atom',
-                'yt': 'http://www.youtube.com/xml/schemas/2015',
-                'media': 'http://search.yahoo.com/mrss/'
-            }
+            process = await asyncio.create_subprocess_exec(
+                *cmd,
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
+            )
+            stdout, stderr = await asyncio.wait_for(
+                process.communicate(),
+                timeout=60
+            )
+
+            if process.returncode != 0:
+                logger.warning(f"yt-dlp failed for {channel_name}: {stderr.decode()[:200]}")
+                return []
+
+            data = json.loads(stdout.decode())
+            entries = data.get("entries", [])
 
             videos = []
-            for entry in root.findall('atom:entry', ns):
+            for entry in entries:
                 try:
-                    video_id = entry.find('yt:videoId', ns).text
-                    title = entry.find('atom:title', ns).text
-                    published_str = entry.find('atom:published', ns).text
+                    video_id = entry.get("id")
+                    title = entry.get("title", "")
 
-                    # Parse datetime
-                    published = datetime.fromisoformat(published_str.replace('Z', '+00:00'))
-                    published_naive = published.replace(tzinfo=None)
-
-                    # Skip old videos
-                    if published_naive < cutoff:
+                    # Skip shorts and non-podcast content
+                    if not video_id or len(title) < 10:
                         continue
 
-                    # Get description from media:group
-                    description = ""
-                    media_group = entry.find('media:group', ns)
-                    if media_group is not None:
-                        desc_elem = media_group.find('media:description', ns)
-                        if desc_elem is not None and desc_elem.text:
-                            description = desc_elem.text
+                    # Get upload date if available
+                    upload_date = entry.get("upload_date")
+                    if upload_date:
+                        published = datetime.strptime(upload_date, "%Y%m%d")
+                    else:
+                        published = datetime.utcnow()
 
-                    # Get thumbnail
-                    thumbnail = None
-                    if media_group is not None:
-                        thumb_elem = media_group.find('media:thumbnail', ns)
-                        if thumb_elem is not None:
-                            thumbnail = thumb_elem.get('url')
+                    # Skip old videos
+                    if published < cutoff:
+                        continue
+
+                    thumbnail = f"https://i.ytimg.com/vi/{video_id}/maxresdefault.jpg"
+                    duration = entry.get("duration")
 
                     videos.append(VideoInfo(
                         video_id=video_id,
                         title=title,
                         channel_name=channel_name,
-                        channel_id=channel_id,
-                        description=description,
+                        channel_id=youtube_handle,
+                        description=entry.get("description", ""),
                         published_at=published,
                         thumbnail_url=thumbnail,
+                        duration_seconds=duration,
                         channel_x_handle=x_handle
                     ))
 
                 except Exception as e:
-                    logger.debug(f"Error parsing entry: {e}")
+                    logger.debug(f"Failed to parse entry: {e}")
                     continue
 
-            logger.info(f"[RSS] {channel_name}: {len(videos)} videos in last {since_hours}h")
+            logger.info(f"[yt-dlp] {channel_name}: {len(videos)} recent videos")
             return videos
 
         except asyncio.TimeoutError:
-            logger.warning(f"RSS timeout for {channel_name}")
+            logger.warning(f"Timeout fetching {channel_name}")
             return []
         except Exception as e:
-            logger.error(f"RSS error for {channel_name}: {e}")
+            logger.warning(f"Failed to fetch {channel_name}: {e}")
             return []
 
-    async def check_all_channels(self, since_hours: int = 48) -> List[VideoInfo]:
-        """Check all configured channels via RSS."""
-        logger.info(f"[RSS] Checking {len(self.CHANNEL_IDS)} channels...")
-
-        # Create tasks for parallel fetching
-        tasks = []
-        for channel_name, (channel_id, x_handle) in self.CHANNEL_IDS.items():
-            task = self.get_channel_videos(channel_name, channel_id, x_handle, since_hours)
-            tasks.append(task)
-
-        # Run all in parallel
-        results = await asyncio.gather(*tasks, return_exceptions=True)
-
-        # Collect all videos
-        all_videos = []
-        for result in results:
-            if isinstance(result, list):
-                all_videos.extend(result)
-            elif isinstance(result, Exception):
-                logger.error(f"Channel check failed: {result}")
-
-        logger.info(f"[RSS] Total: {len(all_videos)} videos from all channels")
-        return all_videos
-
     def is_likely_podcast(self, video: VideoInfo) -> bool:
-        """Check if video is likely a podcast (not a short)."""
+        """Check if a video is likely a podcast episode."""
         title_lower = video.title.lower()
 
-        # Skip obvious non-podcasts
-        skip_keywords = ["shorts", "#shorts", "trailer", "teaser", "promo", "announcement", "clip"]
-        if any(kw in title_lower for kw in skip_keywords):
+        # Duration check (podcasts are usually > 20 min)
+        if video.duration_seconds and video.duration_seconds < 1200:
             return False
 
-        # We don't have duration from RSS, so we'll filter later during transcription
-        return True
+        # Podcast keywords
+        podcast_keywords = [
+            "podcast", "episode", "ep.", "ep ", "interview",
+            "conversation", "talk", "chat", "discussion",
+            "ft.", "feat.", "with", "|", "—", "-"
+        ]
+
+        # Check if title contains podcast indicators
+        has_keyword = any(kw in title_lower for kw in podcast_keywords)
+
+        # Skip obvious non-podcasts
+        skip_keywords = ["shorts", "#shorts", "trailer", "teaser", "announcement"]
+        is_skip = any(kw in title_lower for kw in skip_keywords)
+
+        return has_keyword and not is_skip
+
+    async def check_all_channels(self, since_hours: int = 48) -> List[VideoInfo]:
+        """Check all configured channels for new videos."""
+        logger.info(f"[yt-dlp] Checking {len(self.CHANNEL_IDS)} channels...")
+
+        all_videos = []
+
+        # Process channels sequentially to avoid rate limiting
+        for channel_name, (youtube_handle, x_handle) in self.CHANNEL_IDS.items():
+            videos = await self.get_channel_videos(
+                channel_name, youtube_handle, x_handle, since_hours
+            )
+            all_videos.extend(videos)
+            # Small delay between channels
+            await asyncio.sleep(1)
+
+        logger.info(f"[yt-dlp] Total: {len(all_videos)} videos from all channels")
+        return all_videos
 
 
 # Singleton

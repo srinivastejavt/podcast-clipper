@@ -89,7 +89,8 @@ class ClipFinderV5:
     ) -> List[ClipCandidate]:
         """Pass 1: Find 5-7 candidate moments."""
 
-        timestamped_text = self._format_transcript(transcript, max_chars=20000)
+        # Ollama has no limits - use more transcript for better context
+        timestamped_text = self._format_transcript(transcript, max_chars=40000)
 
         prompt = f"""Find 5-7 potential viral clip moments from this crypto podcast.
 
@@ -133,11 +134,24 @@ Rules:
 
             candidates = []
             for c in result.get("candidates", []):
-                start = float(str(c.get("start_time", 0)).replace("s", ""))
-                end = float(str(c.get("end_time", 0)).replace("s", ""))
+                start = float(str(c.get("start_time", 0) or 0).replace("s", ""))
+                end = c.get("end_time")
 
-                if start < 30 or end - start < 25 or end - start > 120:
+                # If end_time is null or missing, default to start + 45 seconds
+                if end is None or end == 0:
+                    end = start + 45
+                else:
+                    end = float(str(end).replace("s", ""))
+
+                if start < 30:
                     continue
+
+                # Ensure reasonable clip duration
+                duration = end - start
+                if duration < 25:
+                    end = start + 45  # Default 45 second clip
+                elif duration > 120:
+                    end = start + 60  # Cap at 60 seconds
 
                 real_text = self._get_real_transcript(start, end)
                 if not real_text:

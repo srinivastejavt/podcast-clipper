@@ -17,15 +17,41 @@
         <select id="channel-filter">
             <option value="">All Channels</option>
         </select>
+        <select id="pattern-filter">
+            <option value="">All Patterns</option>
+            <option value="prediction">Predictions</option>
+            <option value="hot_take">Hot Takes</option>
+            <option value="insight">Insights</option>
+            <option value="data">Data/Numbers</option>
+            <option value="humor">Humor</option>
+        </select>
+        <select id="duration-filter">
+            <option value="">Any Duration</option>
+            <option value="short">Short (&lt;45s)</option>
+            <option value="medium">Medium (45-75s)</option>
+            <option value="long">Long (&gt;75s)</option>
+        </select>
         <select id="sort">
             <option value="newest">Newest First</option>
             <option value="score">Best Score</option>
             <option value="oldest">Oldest First</option>
+            <option value="duration">Shortest First</option>
         </select>
         <label class="checkbox-label">
             <input type="checkbox" id="hide-posted">
             Hide posted
         </label>
+        <label class="checkbox-label">
+            <input type="checkbox" id="high-score-only">
+            Score 7+
+        </label>
+    </div>
+
+    <div class="quick-stats" id="quick-stats">
+        <span class="stat-item">Total: <strong id="stat-total">0</strong></span>
+        <span class="stat-item">Unposted: <strong id="stat-unposted">0</strong></span>
+        <span class="stat-item">High Score (7+): <strong id="stat-high">0</strong></span>
+        <span class="stat-item">Showing: <strong id="stat-showing">0</strong></span>
     </div>
 
     <div class="stats" id="stats"></div>
@@ -37,6 +63,12 @@
     <footer>
         <p>Auto-updated every 2 hours via GitHub Actions</p>
     </footer>
+
+    <div class="keyboard-hint" id="keyboard-hint">
+        <kbd>J</kbd> Next <kbd>K</kbd> Prev <kbd>C</kbd> Copy <kbd>P</kbd> Mark Posted
+    </div>
+
+    <div class="toast" id="toast">Copied to clipboard!</div>
 
     <script src="app.js"></script>
 </body>

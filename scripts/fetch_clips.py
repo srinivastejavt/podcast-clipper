@@ -2,7 +2,7 @@
 """
 Fetch Clips - Entry point for GitHub Actions
 
-Uses RSS feeds (no quota limits!) to fetch videos, then processes for clips.
+Uses yt-dlp scraping (no quota limits!) to fetch videos, then processes for clips.
 """
 
 import asyncio
@@ -94,7 +94,7 @@ def save_clips(clips: list, posted_ids: set):
 
 async def main():
     """Main entry point."""
-    logger.info("=== Podcast Clip Fetcher (RSS - No Quota!) ===")
+    logger.info("=== Podcast Clip Fetcher (yt-dlp - No Quota!) ===")
 
     # Groq is optional - will fall back to Ollama if not set
     if not os.getenv("GROQ_API_KEY"):
@@ -106,8 +106,8 @@ async def main():
     posted_ids = load_posted_clips()
     logger.info(f"State: {len(processed_ids)} processed, {len(existing_clips)} clips, {len(posted_ids)} posted")
 
-    # Fetch recent videos via RSS (no quota limits!)
-    logger.info("Fetching via RSS feeds...")
+    # Fetch recent videos via yt-dlp (no quota limits!)
+    logger.info("Fetching via yt-dlp scraping...")
     videos = await rss_monitor.check_all_channels(since_hours=48)
 
     # Filter to podcasts only

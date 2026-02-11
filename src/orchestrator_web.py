@@ -15,6 +15,8 @@ from loguru import logger
 from src.transcriber import transcriber
 from src.clip_finder_v5 import clip_finder_v5, ClipCandidate
 from src.llm import llm
+from src.clip_generator import clip_generator
+from src.rss_monitor import VideoInfo
 
 
 @dataclass
@@ -36,18 +38,20 @@ class WebClip:
     created_at: str
     score: float = 0.0
     thumbnail_url: Optional[str] = None
-    clip_url: Optional[str] = None  # For video clips when generated
+    clip_url: Optional[str] = None  # Path to generated MP4 clip
+    embed_url: str = ""  # YouTube embed URL with start/end times
 
     def to_dict(self) -> dict:
         return asdict(self)
 
 
 class OrchestratorWeb:
-    """Simplified orchestrator for web app - no video files."""
+    """Simplified orchestrator for web app - generates video clips."""
 
     def __init__(self):
         self.max_retries = 2
         self.retry_delay = 5
+        self.generate_clips = True  # Set to False to skip video generation
 
     async def process_video(self, video: VideoInfo) -> List[WebClip]:
         """Process video and return web-ready clips."""
@@ -72,13 +76,32 @@ class OrchestratorWeb:
             post_tasks = [self._write_post(clip, video) for clip in clips]
             post_texts = await asyncio.gather(*post_tasks, return_exceptions=True)
 
+            # Step 4: Generate video clips in parallel (if enabled)
+            clip_paths = [None] * len(clips)
+            if self.generate_clips:
+                logger.info(f"[Web] Generating {len(clips)} video clips...")
+                clip_tasks = [
+                    clip_generator.generate_clip(video.video_id, clip.start_time, clip.end_time)
+                    for clip in clips
+                ]
+                clip_results = await asyncio.gather(*clip_tasks, return_exceptions=True)
+                clip_paths = [
+                    r if isinstance(r, str) else None
+                    for r in clip_results
+                ]
+                successful = sum(1 for p in clip_paths if p)
+                logger.info(f"[Web] Generated {successful}/{len(clips)} video clips")
+
             # Build web clips
             web_clips = []
-            for clip, post_text in zip(clips, post_texts):
+            for clip, post_text, clip_path in zip(clips, post_texts, clip_paths):
                 if isinstance(post_text, Exception) or not post_text:
                     post_text = self._fallback_post(clip, video)
 
                 youtube_url = f"https://www.youtube.com/watch?v={video.video_id}&t={int(clip.start_time)}s"
+
+                # YouTube embed with start/end times
+                embed_url = f"https://www.youtube.com/embed/{video.video_id}?start={int(clip.start_time)}&end={int(clip.end_time)}&autoplay=0"
 
                 web_clips.append(WebClip(
                     video_id=video.video_id,
@@ -96,7 +119,9 @@ class OrchestratorWeb:
                     youtube_url=youtube_url,
                     created_at=datetime.utcnow().isoformat(),
                     score=getattr(clip, 'score', 0.0),
-                    thumbnail_url=getattr(video, 'thumbnail_url', None)
+                    thumbnail_url=getattr(video, 'thumbnail_url', None),
+                    clip_url=clip_path,
+                    embed_url=embed_url
                 ))
 
             # Cleanup

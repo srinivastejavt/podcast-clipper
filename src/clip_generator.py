@@ -2,6 +2,7 @@
 Clip Generator - Creates actual video clips (30-60s MP4s)
 
 Downloads video, extracts clip, uploads to cloud storage.
+Uses pytubefix + ffmpeg for reliable clip extraction.
 """
 
 import asyncio
@@ -9,10 +10,10 @@ import subprocess
 from pathlib import Path
 from typing import Optional
 from loguru import logger
-import aiohttp
 import os
 
 CLIPS_DIR = Path(__file__).parent.parent / "data" / "video_clips"
+TEMP_DIR = Path(__file__).parent.parent / "data" / "temp_downloads"
 
 
 class ClipGenerator:
@@ -20,6 +21,7 @@ class ClipGenerator:
 
     def __init__(self):
         CLIPS_DIR.mkdir(parents=True, exist_ok=True)
+        TEMP_DIR.mkdir(parents=True, exist_ok=True)
 
     async def generate_clip(
         self,
@@ -29,7 +31,7 @@ class ClipGenerator:
         output_name: Optional[str] = None
     ) -> Optional[str]:
         """
-        Generate a video clip.
+        Generate a video clip using pytubefix + ffmpeg.
 
         Returns: Path to clip file or None if failed
         """
@@ -44,24 +46,43 @@ class ClipGenerator:
             return str(output_path)
 
         url = f"https://www.youtube.com/watch?v={video_id}"
+        temp_file = TEMP_DIR / f"{video_id}_temp.mp4"
         duration = end_time - start_time
 
         try:
-            # Use yt-dlp + ffmpeg to download just the clip segment
-            # This is more efficient than downloading the whole video
-            cmd = [
-                "yt-dlp",
-                "--quiet",
-                "--no-warnings",
-                "-f", "bestvideo[height<=720][ext=mp4]+bestaudio[ext=m4a]/best[height<=720][ext=mp4]/best",
-                "--download-sections", f"*{start_time}-{end_time}",
-                "--force-keyframes-at-cuts",
-                "-o", str(output_path),
-                "--merge-output-format", "mp4",
-                url
-            ]
-
             logger.info(f"Generating clip: {video_id} [{start_time}s - {end_time}s]")
+
+            # Download video using pytubefix
+            from pytubefix import YouTube
+            yt = YouTube(url)
+
+            # Get best progressive stream (video+audio in one file)
+            stream = yt.streams.filter(
+                progressive=True,
+                file_extension='mp4'
+            ).order_by('resolution').desc().first()
+
+            if not stream:
+                logger.error(f"No suitable stream found for {video_id}")
+                return None
+
+            # Download to temp file
+            logger.info(f"Downloading: {stream.resolution}")
+            stream.download(output_path=str(TEMP_DIR), filename=f"{video_id}_temp.mp4")
+
+            if not temp_file.exists():
+                logger.error("Download failed - temp file not created")
+                return None
+
+            # Cut clip with ffmpeg
+            cmd = [
+                "ffmpeg", "-y",
+                "-ss", str(start_time),
+                "-i", str(temp_file),
+                "-t", str(duration),
+                "-c", "copy",
+                str(output_path)
+            ]
 
             process = await asyncio.create_subprocess_exec(
                 *cmd,
@@ -70,25 +91,30 @@ class ClipGenerator:
             )
             stdout, stderr = await asyncio.wait_for(
                 process.communicate(),
-                timeout=300  # 5 min timeout
+                timeout=60
             )
 
-            if process.returncode != 0:
-                logger.error(f"yt-dlp error: {stderr.decode()}")
-                return None
+            # Cleanup temp file
+            if temp_file.exists():
+                temp_file.unlink()
 
             if output_path.exists():
-                logger.info(f"Clip generated: {output_path} ({output_path.stat().st_size / 1024:.1f} KB)")
+                size_kb = output_path.stat().st_size / 1024
+                logger.info(f"Clip generated: {output_path} ({size_kb:.1f} KB)")
                 return str(output_path)
             else:
-                logger.error("Clip file not created")
+                logger.error("Clip file not created by ffmpeg")
                 return None
 
         except asyncio.TimeoutError:
             logger.error(f"Clip generation timed out for {video_id}")
+            if temp_file.exists():
+                temp_file.unlink()
             return None
         except Exception as e:
             logger.error(f"Clip generation error: {e}")
+            if temp_file.exists():
+                temp_file.unlink()
             return None
 
     async def upload_to_cloudflare_r2(

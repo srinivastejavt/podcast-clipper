@@ -28,22 +28,28 @@ except ImportError:
 
 
 class LLM:
-    """Unified LLM interface - Groq (cloud) with Ollama fallback."""
+    """Unified LLM interface - Ollama (local, no rate limits) preferred, Groq fallback."""
 
     def __init__(self):
         self.groq_client: Optional[Groq] = None
         self.groq_model = "llama-3.1-8b-instant"  # Free tier model
         self.ollama_model = os.getenv("OLLAMA_MODEL", "llama3.1:8b")
+        self.use_ollama = False
 
-        # Initialize Groq if API key available
-        groq_key = os.getenv("GROQ_API_KEY")
-        if groq_key and GROQ_AVAILABLE:
-            self.groq_client = Groq(api_key=groq_key)
-            logger.info(f"LLM: Using Groq ({self.groq_model})")
-        elif OLLAMA_AVAILABLE:
-            logger.info(f"LLM: Using Ollama ({self.ollama_model})")
+        # Prefer Ollama (no rate limits!)
+        if OLLAMA_AVAILABLE:
+            self.use_ollama = True
+            logger.info(f"LLM: Using Ollama ({self.ollama_model}) - no rate limits!")
+        # Fall back to Groq if Ollama not available
+        elif GROQ_AVAILABLE:
+            groq_key = os.getenv("GROQ_API_KEY")
+            if groq_key:
+                self.groq_client = Groq(api_key=groq_key)
+                logger.info(f"LLM: Using Groq ({self.groq_model})")
+            else:
+                raise RuntimeError("GROQ_API_KEY not set and Ollama not available!")
         else:
-            raise RuntimeError("No LLM available! Install groq or ollama package.")
+            raise RuntimeError("No LLM available! Install ollama or groq package.")
 
     async def chat(self, prompt: str, json_mode: bool = False) -> str:
         """
@@ -56,7 +62,10 @@ class LLM:
         Returns:
             The assistant's response text
         """
-        if self.groq_client:
+        # Prefer Ollama (no rate limits)
+        if self.use_ollama:
+            return await self._ollama_chat(prompt, json_mode)
+        elif self.groq_client:
             return await self._groq_chat(prompt, json_mode)
         else:
             return await self._ollama_chat(prompt, json_mode)

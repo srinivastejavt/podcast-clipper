@@ -9,6 +9,7 @@ import asyncio
 import subprocess
 import tempfile
 import json
+import sys
 from pathlib import Path
 from typing import Optional
 from dataclasses import dataclass
@@ -68,7 +69,7 @@ class Transcriber:
         self._model = None
 
     async def download_audio(self, video_id: str) -> Optional[Path]:
-        """Download audio from YouTube video using yt-dlp."""
+        """Download audio from YouTube video using pytubefix (more reliable)."""
         output_path = TRANSCRIPTS_DIR / f"{video_id}.mp3"
 
         if output_path.exists():
@@ -76,31 +77,45 @@ class Transcriber:
             return output_path
 
         try:
+            from pytubefix import YouTube
+
             url = f"https://www.youtube.com/watch?v={video_id}"
-            cmd = [
-                "yt-dlp",
-                "-x",  # Extract audio
-                "--audio-format", "mp3",
-                "--audio-quality", "0",  # Best quality
-                "-o", str(output_path),
-                "--no-playlist",
-                url
-            ]
-
             logger.info(f"Downloading audio for {video_id}...")
-            process = await asyncio.create_subprocess_exec(
-                *cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
-            stdout, stderr = await process.communicate()
 
-            if process.returncode != 0:
-                logger.error(f"yt-dlp error: {stderr.decode()}")
+            yt = YouTube(url)
+
+            # Get audio stream
+            audio_stream = yt.streams.filter(only_audio=True).order_by('abr').desc().first()
+            if not audio_stream:
+                # Fallback to progressive with audio
+                audio_stream = yt.streams.filter(progressive=True).first()
+
+            if not audio_stream:
+                logger.error(f"No audio stream found for {video_id}")
                 return None
 
-            logger.info(f"Audio downloaded: {output_path}")
-            return output_path
+            # Download
+            temp_path = TRANSCRIPTS_DIR / f"{video_id}_temp"
+            audio_stream.download(output_path=str(TRANSCRIPTS_DIR), filename=f"{video_id}_temp")
+
+            # Find downloaded file (extension may vary)
+            for ext in ['.mp4', '.m4a', '.webm', '.mp3']:
+                temp_file = TRANSCRIPTS_DIR / f"{video_id}_temp{ext}"
+                if temp_file.exists():
+                    temp_file.rename(output_path)
+                    break
+
+            # Also try without extension
+            temp_file = TRANSCRIPTS_DIR / f"{video_id}_temp"
+            if temp_file.exists():
+                temp_file.rename(output_path)
+
+            if output_path.exists():
+                logger.info(f"Audio downloaded: {output_path}")
+                return output_path
+            else:
+                logger.error(f"Audio file not found after download")
+                return None
 
         except Exception as e:
             logger.error(f"Error downloading audio: {e}")
@@ -169,7 +184,7 @@ class Transcriber:
         try:
             url = f"https://www.youtube.com/watch?v={video_id}"
             cmd = [
-                "yt-dlp",
+                sys.executable, "-m", "yt_dlp",
                 "--write-auto-sub",
                 "--sub-lang", "en",
                 "--skip-download",
@@ -242,7 +257,14 @@ class Transcriber:
             return None
 
     async def _run_whisper(self, audio_path: Path) -> Optional[dict]:
-        """Run Whisper transcription."""
+        """Run Whisper transcription - try Groq API first (fast + free), then local."""
+        # Try Groq Whisper API first (free 5hrs/day, very fast)
+        groq_result = await self._transcribe_with_groq(audio_path)
+        if groq_result:
+            return groq_result
+
+        logger.info("Groq Whisper unavailable, trying local Whisper...")
+
         try:
             # Try mlx-whisper first (optimized for Apple Silicon)
             import mlx_whisper
@@ -282,6 +304,52 @@ class Transcriber:
             return result
         except ImportError:
             logger.error("Neither mlx-whisper nor whisper is installed")
+            return None
+
+    async def _transcribe_with_groq(self, audio_path: Path) -> Optional[dict]:
+        """Transcribe using Groq's Whisper API (free 5hrs/day, very fast)."""
+        import os
+        api_key = os.getenv("GROQ_API_KEY")
+        if not api_key:
+            return None
+
+        try:
+            from groq import Groq
+
+            client = Groq(api_key=api_key)
+
+            # Check file size - Groq has 25MB limit
+            file_size = audio_path.stat().st_size / (1024 * 1024)  # MB
+            if file_size > 25:
+                logger.warning(f"Audio file too large for Groq ({file_size:.1f}MB > 25MB)")
+                return None
+
+            logger.info(f"Transcribing with Groq Whisper ({file_size:.1f}MB)...")
+
+            with open(audio_path, "rb") as file:
+                transcription = await asyncio.to_thread(
+                    client.audio.transcriptions.create,
+                    file=(audio_path.name, file.read()),
+                    model="whisper-large-v3-turbo",
+                    response_format="verbose_json"
+                )
+
+            # Convert to our format
+            segments = []
+            for seg in transcription.segments or []:
+                segments.append({
+                    "start": seg.get("start", 0),
+                    "end": seg.get("end", 0),
+                    "text": seg.get("text", "")
+                })
+
+            return {
+                "text": transcription.text,
+                "segments": segments
+            }
+
+        except Exception as e:
+            logger.warning(f"Groq Whisper failed: {e}")
             return None
 
     async def _save_transcript(self, transcript: Transcript, path: Path):
