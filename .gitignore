@@ -15,7 +15,7 @@ ENV/
 # Data & Cache
 data/
 transcripts/
-clips/
+/clips/
 *.db
 *.sqlite
 *.log
@@ -33,4 +33,3 @@ Thumbs.db
 # Temp files
 *.tmp
 *.bak
-docs/clips/
