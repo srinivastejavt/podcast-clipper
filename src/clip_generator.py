@@ -12,7 +12,8 @@ from typing import Optional
 from loguru import logger
 import os
 
-CLIPS_DIR = Path(__file__).parent.parent / "data" / "video_clips"
+# Output directly to docs/clips for GitHub Pages
+CLIPS_DIR = Path(__file__).parent.parent / "docs" / "clips"
 TEMP_DIR = Path(__file__).parent.parent / "data" / "temp_downloads"
 
 
