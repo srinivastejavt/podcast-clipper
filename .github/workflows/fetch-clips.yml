@@ -9,6 +9,8 @@ on:
 jobs:
   fetch-clips:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -25,7 +27,7 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install groq aiohttp loguru pytubefix python-dotenv pydantic
+          pip install groq aiohttp loguru pytubefix python-dotenv pydantic yt-dlp
 
       - name: Fetch and process clips
         env:
@@ -41,6 +43,6 @@ jobs:
         run: |
           git config --local user.email "github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
-          git add docs/clips.json docs/clips/ data/ || true
+          git add docs/clips.json docs/clips/ || true
           git diff --staged --quiet || git commit -m "Update clips [skip ci]"
           git push
