@@ -22,9 +22,6 @@ for dir_path in [DATA_DIR, CLIPS_DIR, TRANSCRIPTS_DIR]:
 
 
 class Config:
-    # Telegram
-    TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN", "")
-
     # YouTube
     YOUTUBE_API_KEY: str = os.getenv("YOUTUBE_API_KEY", "")
 
