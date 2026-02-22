@@ -992,12 +992,12 @@
   "metadata": {
     "total_clips": 49,
     "unposted_clips": 49,
-    "generated_at": "2026-02-22T20:46:41.740917",
+    "generated_at": "2026-02-22T22:44:24.335146",
     "channels": [
-      "Unknown",
       "The Pomp Podcast",
-      "Bankless",
-      "Real Vision Crypto"
+      "Real Vision Crypto",
+      "Unknown",
+      "Bankless"
     ]
   }
 }
