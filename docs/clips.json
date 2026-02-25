@@ -891,57 +891,15 @@
       "thumbnail_url": "https://i.ytimg.com/vi/dQw4w9WgXcQ/maxresdefault.jpg",
       "clip_url": "clips/dQw4w9WgXcQ_40_85.mp4",
       "posted": false
-    },
-    {
-      "video_id": "6ltX7WyfkeI",
-      "channel_name": "Unknown",
-      "video_title": "Video 6ltX7WyfkeI",
-      "published_at": "2026-02-11T08:06:27.186137",
-      "start_time": 476.0,
-      "end_time": 505.0,
-      "transcript_text": "right? So you might like you you might, you know, wonder why doesn't some app have DCA or something like that. It's because their their financial partner doesn't allow them the option to do something called a pull, right? And that that gets really annoying. You might wonder why your favorite app doesn't have Apple Pay, you know, and that's because their, you know, their their payments processor doesn't have a vendor that's partnered with, you know, Apple Pay. It's stuff like that that gets in the way and adds friction to actually onboarding pre-coiners. And that's what we're trying to solve here, uh, in as many places as possible.",
-      "quotable_line": "it's not you, it's their financial partner, limiting their options with no 'pull' allowed",
-      "full_post_text": "\"it's not you, it's their financial partner, limiting their options with no 'pull' allowed. financial partners often dictate the features we get, limiting user experience. transparency is key, not excuses.\"",
-      "pattern": "",
-      "why_good": "",
-      "speaker": "",
-      "youtube_url": "https://www.youtube.com/watch?v=6ltX7WyfkeI&t=476s",
-      "embed_url": "https://www.youtube.com/embed/6ltX7WyfkeI?start=476&end=505",
-      "created_at": "2026-02-11T08:06:27.186149",
-      "score": 6.4,
-      "thumbnail_url": "https://i.ytimg.com/vi/6ltX7WyfkeI/maxresdefault.jpg",
-      "clip_url": "clips/6ltX7WyfkeI_476_505.mp4",
-      "posted": false
-    },
-    {
-      "video_id": "55kBwPCm8Yo",
-      "channel_name": "Unknown",
-      "video_title": "Video 55kBwPCm8Yo",
-      "published_at": "2026-02-11T08:04:54.244522",
-      "start_time": 550.0,
-      "end_time": 579.0,
-      "transcript_text": "And so, you know, security becomes, you know, more and more and more important. And it's not I think it's not only security, it's it's also just retaining your identity. You know, the right word is proof, right? Like what is um you know what is a a blockchain but it's a method for proof of ownership, right? Um but you also need proof of identity, proof that my voice is coming out of this microphone and it wasn't, you know, edited. I mean, when you're watching this, you don't know that it's me. You really don't. you know, I mean, ultimately we will need that proof,",
-      "quotable_line": "proof of ownership isn't just a concept, it's a safeguard for your identity",
-      "full_post_text": "\"proof of ownership isn't just a concept, it's a safeguard for your identity. this is where self-sovereign identity and decentralized authentication come into play, liberating us from traditional identity management.\"",
-      "pattern": "",
-      "why_good": "",
-      "speaker": "",
-      "youtube_url": "https://www.youtube.com/watch?v=55kBwPCm8Yo&t=550s",
-      "embed_url": "https://www.youtube.com/embed/55kBwPCm8Yo?start=550&end=579",
-      "created_at": "2026-02-11T08:04:54.244535",
-      "score": 7.2,
-      "thumbnail_url": "https://i.ytimg.com/vi/55kBwPCm8Yo/maxresdefault.jpg",
-      "clip_url": "clips/55kBwPCm8Yo_550_579.mp4",
-      "posted": false
     }
   ],
   "metadata": {
-    "total_clips": 46,
-    "unposted_clips": 46,
-    "generated_at": "2026-02-25T07:23:25.950072",
+    "total_clips": 44,
+    "unposted_clips": 44,
+    "generated_at": "2026-02-25T09:10:36.480431",
     "channels": [
-      "Unknown",
-      "Bankless"
+      "Bankless",
+      "Unknown"
     ]
   }
 }
