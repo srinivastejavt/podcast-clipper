@@ -933,71 +933,15 @@
       "thumbnail_url": "https://i.ytimg.com/vi/55kBwPCm8Yo/maxresdefault.jpg",
       "clip_url": "clips/55kBwPCm8Yo_550_579.mp4",
       "posted": false
-    },
-    {
-      "video_id": "ymdnXnRazcQ",
-      "channel_name": "The Pomp Podcast",
-      "video_title": "VIP Day | Bitcoin Investor Week 2026",
-      "published_at": "2026-02-10T22:01:14+00:00",
-      "start_time": 300,
-      "end_time": 360,
-      "transcript_text": "their care about a much higher percentage than",
-      "quotable_line": "Won't sell Bitcoin even at $8,000",
-      "full_post_text": "\"won't sell bitcoin even at $8,000\"\n\nhere's what i understood + my take: someone is willing to hold onto their bitcoin for a long time, even if it drops significantly in value. but let's dig deeper - this means they believe the underlying technology and use cases for bitcoin are worth more than its current price tag.\n\ni think this level of conviction is a big deal, as it suggests that some people are thinking decades ahead, not just weeks or months. it's also a reminder that crypto markets often reward long-term thinking over short-term gains. but what most people miss is the impact this has on market dynamics - if everyone holds onto their assets, where does the price go?",
-      "pattern": "SPECSIFIC NUMBERS",
-      "why_good": "Concrete data makes it real and memorable",
-      "speaker": "",
-      "youtube_url": "https://www.youtube.com/watch?v=ymdnXnRazcQ&t=300s",
-      "created_at": "2026-02-11T06:19:31.943220",
-      "clip_url": "clips/ymdnXnRazcQ_300_360.mp4",
-      "posted": false
-    },
-    {
-      "video_id": "tJSqSu54ihs",
-      "channel_name": "Real Vision Crypto",
-      "video_title": "A New &quot;Magnificent Seven&quot; of Web3? ft. Mike Cagney from Figure Markets",
-      "published_at": "2026-02-10T14:28:10+00:00",
-      "start_time": 162,
-      "end_time": 194,
-      "transcript_text": "have a magnificent seven of web 2.0 I I think we're going to have that same emergence in web 3.0 you know, and and I hope that figure is one of those companies. I I think you know again given what we're doing in the real world asset space given what we're doing bridging tradi and defi the amount of sellside and buyside firms we've brought into blockchain you know the first transactions they've done have been with us you know I hope that we're going to be one of those companies but I think we are going to create this magnificent I don't know if it's five or seven or eight companies or whatever the number is but there'll be an emergence of a web 3 ecosystem and and the public market I think is very aware of that and and you know I think it's great that they're",
-      "quotable_line": "MAGNIFICENT SEVEN OF WEB 3.0",
-      "full_post_text": "magnificent seven of web 3.0\n\nhere's what i understood + my take - \"the emergence in web 3.0 is similar to the one we saw in web 2.0, and i think we'll see a new set of companies emerge that will define this space.\" but let's dig deeper. the mention of a specific number (five or seven) implies that there are already some players in the field that are setting the tone for this new era.\n\ni think this is a reflection of the growing maturity of web 3.0, with more and more institutions entering the space and recognizing its potential. it's also indicative of the increasing importance of decentralized finance (defi) and blockchain technology in the broader financial landscape.\n\nbut what most people miss is that this emergence is not just about individual companies, but also about the ecosystem as a whole. the public market's awareness of web 3.0's potential is just one aspect of this larger trend - the real story is how these new technologies are being integrated into existing systems and reshaping the way we interact with money and information.",
-      "pattern": "BOLD PREDICTION",
-      "why_good": "interesting take",
-      "speaker": "Mike Cagney",
-      "youtube_url": "https://www.youtube.com/watch?v=tJSqSu54ihs&t=162s",
-      "created_at": "2026-02-11T06:21:42.275273",
-      "clip_url": "clips/tJSqSu54ihs_162_194.mp4",
-      "posted": false
-    },
-    {
-      "video_id": "tJSqSu54ihs",
-      "channel_name": "Real Vision Crypto",
-      "video_title": "A New &quot;Magnificent Seven&quot; of Web3? ft. Mike Cagney from Figure Markets",
-      "published_at": "2026-02-10T14:28:10+00:00",
-      "start_time": 415,
-      "end_time": 450,
-      "transcript_text": "strategy? >> Yeah, look, I think that that the Genius Act really has opened up an opportunity for stable coins to be truly disruptive because I don't think they could have been disruptive up to that point. The the problem we've always had with stable coins is we've not had utility with them, right? But I can't go to Starbucks and buy coffee with stable coin and and you know I can buy Bitcoin with it but I can't buy coffee. What's going to happen with the Genius Act is I think Chase and some of the other very large banks are going to build rails that will work on coin. That will mean that I now have utility. I now have a competitive product to a bank deposit account. >> That's going to pull liabilities out of",
-      "quotable_line": "STABLE COINS GET DISRUPTIVE",
-      "full_post_text": "\"stable coins get disruptive\"\n\nhere's what i understood + my take - stable coins were previously limited because they didn't have utility, you couldn't use them to buy everyday things like coffee. but the genius act is going to change that by allowing large banks to build rails for using stable coins.\n\ni think this opens up a huge opportunity for stable coins to compete directly with traditional bank deposit accounts, which could pull liabilities out of traditional banking and into crypto. as more people start using stable coins to pay bills and buy everyday things, it will create a snowball effect that drives adoption even further. \n\nbut what most people miss is that this is not just about stable coins, but about the underlying infrastructure being built in crypto that's going to enable widespread use cases.",
-      "pattern": "HOT TAKE",
-      "why_good": "controversial",
-      "speaker": "Mike Cagney",
-      "youtube_url": "https://www.youtube.com/watch?v=tJSqSu54ihs&t=415s",
-      "created_at": "2026-02-11T06:21:42.275390",
-      "clip_url": "clips/tJSqSu54ihs_415_450.mp4",
-      "posted": false
     }
   ],
   "metadata": {
-    "total_clips": 49,
-    "unposted_clips": 49,
-    "generated_at": "2026-02-25T05:36:38.934751",
+    "total_clips": 46,
+    "unposted_clips": 46,
+    "generated_at": "2026-02-25T07:23:25.950072",
     "channels": [
-      "The Pomp Podcast",
-      "Bankless",
-      "Real Vision Crypto",
-      "Unknown"
+      "Unknown",
+      "Bankless"
     ]
   }
 }
